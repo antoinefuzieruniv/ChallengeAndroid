@@ -77,12 +77,15 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     private float last_y;
     private float last_z;
 
+    private GestionMalus gestionMalus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
         game_board = (LinearLayout) findViewById(R.id.game_board);
+        gestionMalus =new GestionMalus();
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 
@@ -459,16 +462,15 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         }
         // Update the score
         score += k * (k + 1) / 2;
-        if (0 < k - 1) {
+        if (0 < k-1){
             int malusAjouter = k - 1;
             malus += malusAjouter;
-            GestionMalus gestionMalus = new GestionMalus();
-            gestionMalus.GererMalus(Malus.DISAPPEAR_GRID, GameActivity.this);
-
+            gestionMalus.malusRandom(GameActivity.this);
         }
         FixGameMatrix();
         return found;
     }
+
 
     void PaintMatrix() {
 
@@ -1005,7 +1007,7 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
                         changeToNormalState();
                     }
                 },
-                5000
+                10000
         );
     }
 
@@ -1027,7 +1029,7 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
                         LEFT_DIRECTION = 3;
                     }
                 },
-                5000
+                10000
         );
     }
 
