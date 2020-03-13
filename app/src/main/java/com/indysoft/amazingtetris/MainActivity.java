@@ -30,6 +30,7 @@ public class MainActivity extends Activity {
     DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
     boolean result = false;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,10 +86,7 @@ public class MainActivity extends Activity {
                         if (playerName.isEmpty()) {
                             Toast.makeText(newGameButton.getContext(), "Please insert a name!", Toast.LENGTH_SHORT).show();
                         } else {
-                            if(!result)
                                 MainActivity.this.startActivity(new Intent(MainActivity.this, ListenerActivity.class));
-                            else
-                                MainActivity.this.startActivity(new Intent(MainActivity.this, GameActivity.class));
                         }
                     }
                 });
