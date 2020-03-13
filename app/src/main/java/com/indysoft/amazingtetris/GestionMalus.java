@@ -22,8 +22,6 @@ public class GestionMalus {
                 Toast.makeText(activity, "MALUS INVERSE !!",Toast.LENGTH_LONG ).show();
                 activity.inverse_direction();
                 break;
-            case DISAPPEAR_GRID:
-                //activity.disappear_grid();
             default:
                 break;
         }
