@@ -25,15 +25,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 
 public class GameActivity extends Activity implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
 
     int NUM_ROWS = 26;
     int NUM_COLUMNS = 16;
-    int BOARD_HEIGHT = 800;
-    int BOARD_WIDTH = 400;
+    int BOARD_HEIGHT = 1920;
+    int BOARD_WIDTH = 1200;
     final Handler handler = new Handler();
     final Shape[] shapes = new Shape[11];
     int RIGHT_DIRECTION = 1;
@@ -44,9 +43,6 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     String difficulty, speed;
     int score;
     boolean gameInProgress, gamePaused, fastSpeedState, currentShapeAlive;
-    Button faster_speed;
-    Button normalSpeed;
-    Button inverse_direction;
     final int dx[] = {-1, 0, 1, 0};
     final int dy[] = {0, 1, 0, -1};
 
