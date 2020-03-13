@@ -3,6 +3,8 @@ package com.indysoft.amazingtetris;
 import android.media.MediaPlayer;
 import android.widget.Toast;
 
+import java.util.Random;
+
 public class GestionMalus {
 
     public void GererMalus(Malus malus, GameActivity activity){
@@ -23,6 +25,12 @@ public class GestionMalus {
             default:
                 break;
         }
+    }
+
+    public void malusRandom(GameActivity activity){
+        Random r = new Random();
+        int valeur = 0 + r.nextInt(Malus.values().length - 0);
+        this.GererMalus(Malus.values()[valeur],activity);
     }
 
 

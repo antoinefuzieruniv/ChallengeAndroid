@@ -461,15 +461,15 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         }
         // Update the score
         score += k * (k + 1) / 2;
-
         if (0 < k-1){
             int malusAjouter = k - 1;
             malus += malusAjouter;
-            gestionMalus.GererMalus(Malus.ACCELERER_PIECE,GameActivity.this);
+            gestionMalus.malusRandom(GameActivity.this);
         }
         FixGameMatrix();
         return found;
     }
+
 
     void PaintMatrix() {
 
