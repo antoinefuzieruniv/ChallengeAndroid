@@ -12,6 +12,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.BitmapDrawable;
 
+import android.graphics.drawable.ColorDrawable;
 import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
@@ -25,6 +26,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -76,15 +78,13 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     private float last_z;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
         game_board = (LinearLayout) findViewById(R.id.game_board);
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-       
+
 
         difficulty = prefs.getString("difficulty_preference", "Normal");
         NUM_ROWS = Integer.parseInt(prefs.getString("num_rows_preference", "20")) + 6;
@@ -133,7 +133,6 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
                 SensorManager.SENSOR_ACCELEROMETER,
                 SensorManager.SENSOR_DELAY_GAME);
     }
-
 
 
     @Override
@@ -460,12 +459,12 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         }
         // Update the score
         score += k * (k + 1) / 2;
-
-        if (0 < k-1){
+        if (0 < k - 1) {
             int malusAjouter = k - 1;
             malus += malusAjouter;
-            GestionMalus gestionMalus =new GestionMalus();
-            gestionMalus.GererMalus(Malus.SONG,GameActivity.this);
+            GestionMalus gestionMalus = new GestionMalus();
+            gestionMalus.GererMalus(Malus.DISAPPEAR_GRID, GameActivity.this);
+
         }
         FixGameMatrix();
         return found;
@@ -483,12 +482,12 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         // Paint the grid on the game board
         paint.setColor(Color.GRAY);
         for (int i = 0; i <= (NUM_ROWS - 6); ++i) {
-            canvas.drawLine(0, i * (BOARD_HEIGHT / (NUM_ROWS - 6)), BOARD_WIDTH,
-                    i * (BOARD_HEIGHT / (NUM_ROWS - 6)), paint);
+            canvas.drawLine(0, i * (BOARD_HEIGHT / (NUM_ROWS - 6f)), BOARD_WIDTH,
+                    i * (BOARD_HEIGHT / (NUM_ROWS - 6f)), paint);
         }
         for (int i = 0; i <= (NUM_COLUMNS - 6); ++i) {
-            canvas.drawLine(i * (BOARD_WIDTH / (NUM_COLUMNS - 6)), 0,
-                    i * (BOARD_WIDTH / (NUM_COLUMNS - 6)), BOARD_HEIGHT, paint);
+            canvas.drawLine(i * (BOARD_WIDTH / (NUM_COLUMNS - 6f)), 0,
+                    i * (BOARD_WIDTH / (NUM_COLUMNS - 6f)), BOARD_HEIGHT, paint);
         }
 
         // Paint the tetris blocks
@@ -496,10 +495,10 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
             for (int j = 3; j < NUM_COLUMNS - 3; ++j) {
                 if (gameMatrix[i][j].getState() == 1) {
                     paint.setColor(gameMatrix[i][j].getColor());
-                    canvas.drawRect((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
-                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
+                    canvas.drawRect((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
+                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
                             paint);
                 }
             }
@@ -510,25 +509,25 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
             for (int j = 3; j < NUM_COLUMNS - 3; ++j) {
                 if (gameMatrix[i][j].getState() == 1) {
                     paint.setColor(Color.BLACK);
-                    canvas.drawLine((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
-                            (j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
+                    canvas.drawLine((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
+                            (j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
                             paint);
-                    canvas.drawLine((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
-                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
+                    canvas.drawLine((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
+                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
                             paint);
-                    canvas.drawLine((j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
-                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
+                    canvas.drawLine((j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
+                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
                             paint);
-                    canvas.drawLine((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
-                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
+                    canvas.drawLine((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
+                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
                             paint);
                 }
             }
@@ -554,7 +553,6 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         game_score_textview.setText("Points: " + score);
         TextView game_malus_count = (TextView) findViewById(R.id.game_malus_count);
         game_malus_count.setText("Malus: " + malus);
-
     }
 
     private void InsertScore() {
@@ -823,7 +821,7 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
                 y = values[SensorManager.DATA_Y];
                 z = values[SensorManager.DATA_Z];
 
-                float speed = Math.abs(x+y+z - last_x - last_y - last_z) / diffTime * 10000;
+                float speed = Math.abs(x + y + z - last_x - last_y - last_z) / diffTime * 10000;
 
                 if (speed > SHAKE_THRESHOLD) {
                     Toast.makeText(this, "shake detected w/ speed: " + speed, Toast.LENGTH_SHORT).show();
@@ -997,7 +995,7 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     }
 
 
-    public void changeToSpeedState(){
+    public void changeToSpeedState() {
         SPEED_NORMAL = 100;
         SPEED_FAST = 5;
         new java.util.Timer().schedule(
@@ -1011,7 +1009,7 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         );
     }
 
-    private void changeToNormalState(){
+    private void changeToNormalState() {
         SPEED_NORMAL = 500;
         SPEED_FAST = 50;
     }
@@ -1032,6 +1030,8 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
                 5000
         );
     }
+
+
 
 }
 

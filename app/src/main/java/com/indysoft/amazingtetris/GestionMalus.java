@@ -16,6 +16,8 @@ public class GestionMalus {
             case INVERSER_SENS:
                 activity.inverse_direction();
                 break;
+            case DISAPPEAR_GRID:
+                //activity.disappear_grid();
             default:
                 break;
         }
