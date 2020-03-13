@@ -11,6 +11,9 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.BitmapDrawable;
+
+import android.hardware.SensorListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,11 +26,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Random;
 
 
-public class GameActivity extends Activity implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
+public class GameActivity extends Activity implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener, SensorListener {
 
     int NUM_ROWS = 26;
     int NUM_COLUMNS = 16;
@@ -42,6 +46,7 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     int SPEED_FAST = 50;
     String difficulty, speed;
     int score;
+    int malus;
     boolean gameInProgress, gamePaused, fastSpeedState, currentShapeAlive;
     final int dx[] = {-1, 0, 1, 0};
     final int dy[] = {0, 1, 0, -1};
@@ -54,9 +59,23 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     Bitmap bitmap;
     Canvas canvas;
     Paint paint;
+
+    SensorManager sensorManager;
+
     LinearLayout game_board;
 
     Shape currentShape;
+    private long lastUpdate;
+    private static final int SHAKE_THRESHOLD = 800;
+    private float x;
+    private float y;
+    private float z;
+
+    private float last_x;
+    private float last_y;
+    private float last_z;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +127,11 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         ShapesInit();
 
         GameInit();
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensorManager.registerListener(this,
+                SensorManager.SENSOR_ACCELEROMETER,
+                SensorManager.SENSOR_DELAY_GAME);
     }
 
 
@@ -436,6 +460,13 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         }
         // Update the score
         score += k * (k + 1) / 2;
+
+        if (0 < k-1){
+            int malusAjouter = k - 1;
+            malus += malusAjouter;
+            GestionMalus gestionMalus =new GestionMalus();
+            gestionMalus.GererMalus(Malus.SONG,GameActivity.this);
+        }
         FixGameMatrix();
         return found;
     }
@@ -522,7 +553,7 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         TextView game_score_textview = (TextView) findViewById(R.id.game_score_textview);
         game_score_textview.setText("Points: " + score);
         TextView game_malus_count = (TextView) findViewById(R.id.game_malus_count);
-        game_malus_count.setText("Malus: " + score);
+        game_malus_count.setText("Malus: " + malus);
 
     }
 
@@ -778,6 +809,37 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         return (angle >= init) && (angle < end);
     }
 
+
+    @Override
+    public void onSensorChanged(int sensor, float[] values) {
+        if (sensor == SensorManager.SENSOR_ACCELEROMETER) {
+            long curTime = System.currentTimeMillis();
+            // only allow one update every 100ms.
+            if ((curTime - lastUpdate) > 300) {
+                long diffTime = (curTime - lastUpdate);
+                lastUpdate = curTime;
+
+                x = values[SensorManager.DATA_X];
+                y = values[SensorManager.DATA_Y];
+                z = values[SensorManager.DATA_Z];
+
+                float speed = Math.abs(x+y+z - last_x - last_y - last_z) / diffTime * 10000;
+
+                if (speed > SHAKE_THRESHOLD) {
+                    Toast.makeText(this, "shake detected w/ speed: " + speed, Toast.LENGTH_SHORT).show();
+                }
+                last_x = x;
+                last_y = y;
+                last_z = z;
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(int sensor, int accuracy) {
+
+    }
+
     public class BoardCell {
         public final static int BEHAVIOR_IS_FIXED = 2, BEHAVIOR_IS_FALLING = 1, BEHAVIOR_NOTHING = 0;
         private int state, color, behavior;
@@ -935,7 +997,7 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     }
 
 
-    private void changeToSpeedState(){
+    public void changeToSpeedState(){
         SPEED_NORMAL = 100;
         SPEED_FAST = 5;
         new java.util.Timer().schedule(
@@ -954,7 +1016,7 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         SPEED_FAST = 50;
     }
 
-    private void inverse_direction() {
+    public void inverse_direction() {
         RIGHT_DIRECTION = 3;
         LEFT_DIRECTION = 1;
 
