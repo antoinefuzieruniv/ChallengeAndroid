@@ -91,6 +91,13 @@ public class MainActivity extends Activity {
                     }
                 });
 
+        findViewById(R.id.solo_new_game_button3).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MainActivity.this.startActivity(new Intent(MainActivity.this, GameActivity.class));
+            }
+        });
+
         // Set the highScoresButton
         Button highScoresButton = (Button) findViewById(R.id.high_scores_button);
         highScoresButton.setOnClickListener(

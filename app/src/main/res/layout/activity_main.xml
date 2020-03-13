@@ -48,17 +48,27 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/nameEditText"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="43dp"
         android:layout_marginBottom="20dp"
         android:text="@string/new_game_button_text"
+        android:textSize="20dp" />
+
+    <Button
+        android:id="@+id/solo_new_game_button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/new_game_button"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="20dp"
+        android:text="@string/new_game_solo_button_text"
         android:textSize="20dp" />
 
     <Button
         android:id="@+id/high_scores_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/new_game_button"
+        android:layout_below="@id/solo_new_game_button3"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
         android:text="@string/high_scores_button_text"
