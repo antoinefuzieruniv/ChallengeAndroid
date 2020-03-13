@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "629267570146",
+    "firebase_url": "https://tetriste-d9c82.firebaseio.com",
+    "project_id": "tetriste-d9c82",
+    "storage_bucket": "tetriste-d9c82.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:629267570146:android:8ba19f6704562c03a3edbb",
+        "android_client_info": {
+          "package_name": "com.indysoft.amazingtetris"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "629267570146-356p1d71qgk5rqbbq9evl9cq2gb6qrfq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.indysoft.amazingtetris",
+            "certificate_hash": "141624b95a145150557eaa06e2a3f545bbc26ccc"
+          }
+        },
+        {
+          "client_id": "629267570146-30a2ge0dtsi1677kod32nvanpm0t9ro3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7M3_q0smQeoHroGwWNK0OgKJ9laSFYsc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "629267570146-30a2ge0dtsi1677kod32nvanpm0t9ro3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

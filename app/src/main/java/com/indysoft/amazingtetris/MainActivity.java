@@ -13,15 +13,27 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.UUID;
+
 public class MainActivity extends Activity {
 
     public static String playerName;
+    DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
+    boolean result = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (HelpSaveSettings.saveSettingsApp == 0) {
@@ -31,6 +43,30 @@ public class MainActivity extends Activity {
             prefs.edit().putString("num_columns_preference", "10").apply();
             prefs.edit().putString("speed_preference", "Normal").apply();
         }
+
+        /********************************************/
+        String uuid = UUID.randomUUID().toString(); // GENERATE UNIQUE STRING
+        mDatabase.child("users").child(uuid).setValue(playerName);
+        mDatabase.child("users").child(uuid).child("malus").setValue(false);
+
+        /*  verify if this is already a player */
+        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(!dataSnapshot.child("playerHere").exists()){
+                    mDatabase.child("playerHere").setValue(false);
+                }
+                else {
+                    mDatabase.child("playerHere").setValue(true);
+                    result = true;
+                    MainActivity.this.startActivity(new Intent(MainActivity.this, GameActivity.class));
+                }
+
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
+        /********************************************/
 
 
         // Restore the player's name
@@ -49,7 +85,10 @@ public class MainActivity extends Activity {
                         if (playerName.isEmpty()) {
                             Toast.makeText(newGameButton.getContext(), "Please insert a name!", Toast.LENGTH_SHORT).show();
                         } else {
-                            MainActivity.this.startActivity(new Intent(MainActivity.this, GameActivity.class));
+                            if(!result)
+                                MainActivity.this.startActivity(new Intent(MainActivity.this, ListenerActivity.class));
+                            else
+                                MainActivity.this.startActivity(new Intent(MainActivity.this, GameActivity.class));
                         }
                     }
                 });
@@ -137,6 +176,8 @@ public class MainActivity extends Activity {
         // TODO Auto-generated method stub
         super.onDestroy();
     }
+
+
 }
 
 
