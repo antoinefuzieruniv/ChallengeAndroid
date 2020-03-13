@@ -2,6 +2,7 @@ package com.indysoft.amazingtetris;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -25,7 +26,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.view.GestureDetectorCompat;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Random;
 
@@ -49,6 +56,7 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     boolean gameInProgress, gamePaused, fastSpeedState, currentShapeAlive;
     final int dx[] = {-1, 0, 1, 0};
     final int dy[] = {0, 1, 0, -1};
+    DatabaseReference mDatabase;
 
     private GestureDetectorCompat gestureDetector;
 
@@ -823,6 +831,14 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
                 float speed = Math.abs(x + y + z - last_x - last_y - last_z) / diffTime * 10000;
 
                 if (speed > SHAKE_THRESHOLD) {
+                    mDatabase.child("users").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            mDatabase.child("users").child("malus").setValue(true);
+                        }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) { }
+                    });
                     Toast.makeText(this, "shake detected w/ speed: " + speed, Toast.LENGTH_SHORT).show();
                 }
                 last_x = x;
@@ -1030,6 +1046,20 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         );
     }
 
+
+    public void verifMalus(){
+        mDatabase.child("users").child("malus").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if((Boolean)dataSnapshot.getValue()){
+                    gestionMalus.malusRandom(GameActivity.this);
+                }
+                mDatabase.child("users").child("malus").setValue(false);
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) { }
+        });
+    }
 
 
 }
