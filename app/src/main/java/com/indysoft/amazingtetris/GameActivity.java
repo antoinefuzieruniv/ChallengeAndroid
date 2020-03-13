@@ -11,9 +11,7 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.BitmapDrawable;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
+
 import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
@@ -25,6 +23,7 @@ import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -72,6 +71,7 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     private float last_x;
     private float last_y;
     private float last_z;
+
 
 
     @Override
@@ -422,6 +422,7 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     }
 
     private boolean Check() {
+        int tempScore = score;
         int k = 0;
         boolean found = false;
         for (int i = NUM_ROWS - 4; i >= 3; --i) {
@@ -452,6 +453,11 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         }
         // Update the score
         score += k * (k + 1) / 2;
+
+        if (tempScore < score-1){
+            GestionMalus gestionMalus =new GestionMalus();
+            gestionMalus.GererMalus(Malus.SONG,GameActivity.this);
+        }
         FixGameMatrix();
         return found;
     }
