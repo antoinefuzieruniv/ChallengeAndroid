@@ -46,6 +46,7 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     int SPEED_FAST = 50;
     String difficulty, speed;
     int score;
+    int malus;
     boolean gameInProgress, gamePaused, fastSpeedState, currentShapeAlive;
 
     final int dx[] = {-1, 0, 1, 0};
@@ -455,6 +456,8 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         score += k * (k + 1) / 2;
 
         if (tempScore < score-1){
+            int malusAjouter = score - tempScore-1;
+            malus += malusAjouter;
             GestionMalus gestionMalus =new GestionMalus();
             gestionMalus.GererMalus(Malus.SONG,GameActivity.this);
         }
