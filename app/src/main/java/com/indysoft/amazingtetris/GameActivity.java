@@ -29,26 +29,29 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 
 public class GameActivity extends Activity implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener, SensorListener {
 
     int NUM_ROWS = 26;
     int NUM_COLUMNS = 16;
-    final int BOARD_HEIGHT = 800;
-    final int BOARD_WIDTH = 400;
+    int BOARD_HEIGHT = 800;
+    int BOARD_WIDTH = 400;
     final Handler handler = new Handler();
     final Shape[] shapes = new Shape[11];
-    final int RIGHT_DIRECTION = 1;
-    final int DOWN_DIRECTION = 2;
-    final int LEFT_DIRECTION = 3;
+    int RIGHT_DIRECTION = 1;
+    int DOWN_DIRECTION = 2;
+    int LEFT_DIRECTION = 3;
     int SPEED_NORMAL = 500;
     int SPEED_FAST = 50;
     String difficulty, speed;
     int score;
     int malus;
     boolean gameInProgress, gamePaused, fastSpeedState, currentShapeAlive;
-
+    Button faster_speed;
+    Button normalSpeed;
+    Button inverse_direction;
     final int dx[] = {-1, 0, 1, 0};
     final int dy[] = {0, 1, 0, -1};
 
@@ -60,8 +63,11 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     Bitmap bitmap;
     Canvas canvas;
     Paint paint;
-    LinearLayout linearLayout;
+
     SensorManager sensorManager;
+
+    LinearLayout game_board;
+
     Shape currentShape;
     private long lastUpdate;
     private static final int SHAKE_THRESHOLD = 800;
@@ -79,8 +85,10 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-        //PreferenceManager.setDefaultValues(this, R.xml.preferences, true); // !?!?
+        game_board = (LinearLayout) findViewById(R.id.game_board);
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+       
 
         difficulty = prefs.getString("difficulty_preference", "Normal");
         NUM_ROWS = Integer.parseInt(prefs.getString("num_rows_preference", "20")) + 6;
@@ -112,7 +120,8 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         bitmap = Bitmap.createBitmap(BOARD_WIDTH, BOARD_HEIGHT, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
         paint = new Paint();
-        linearLayout = (LinearLayout) findViewById(R.id.game_board);
+
+
         score = 0;
         currentShapeAlive = false;
 
@@ -128,6 +137,8 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
                 SensorManager.SENSOR_ACCELEROMETER,
                 SensorManager.SENSOR_DELAY_GAME);
     }
+
+
 
     @Override
     protected void onStop() {
@@ -423,7 +434,6 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     }
 
     private boolean Check() {
-        int tempScore = score;
         int k = 0;
         boolean found = false;
         for (int i = NUM_ROWS - 4; i >= 3; --i) {
@@ -455,8 +465,8 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         // Update the score
         score += k * (k + 1) / 2;
 
-        if (tempScore < score-1){
-            int malusAjouter = score - tempScore-1;
+        if (0 < k-1){
+            int malusAjouter = k - 1;
             malus += malusAjouter;
             GestionMalus gestionMalus =new GestionMalus();
             gestionMalus.GererMalus(Malus.SONG,GameActivity.this);
@@ -541,13 +551,13 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         }
 
         // Display the current painting
-        linearLayout.setBackgroundDrawable(new BitmapDrawable(bitmap));
+        game_board.setBackgroundDrawable(new BitmapDrawable(bitmap));
 
         // Update the score textview
         TextView game_score_textview = (TextView) findViewById(R.id.game_score_textview);
         game_score_textview.setText("Points: " + score);
         TextView game_malus_count = (TextView) findViewById(R.id.game_malus_count);
-        game_malus_count.setText("Malus: " + score);
+        game_malus_count.setText("Malus: " + malus);
 
     }
 
@@ -989,5 +999,43 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
             }
         }
     }
+
+
+    public void changeToSpeedState(){
+        SPEED_NORMAL = 100;
+        SPEED_FAST = 5;
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        changeToNormalState();
+                    }
+                },
+                5000
+        );
+    }
+
+    private void changeToNormalState(){
+        SPEED_NORMAL = 500;
+        SPEED_FAST = 50;
+    }
+
+    public void inverse_direction() {
+        RIGHT_DIRECTION = 3;
+        LEFT_DIRECTION = 1;
+
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        RIGHT_DIRECTION = 1;
+                        DOWN_DIRECTION = 2;
+                        LEFT_DIRECTION = 3;
+                    }
+                },
+                5000
+        );
+    }
+
 }
 
