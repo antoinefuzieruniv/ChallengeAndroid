@@ -8,7 +8,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.BitmapDrawable;
+
+import android.graphics.drawable.ColorDrawable;
+import android.hardware.SensorListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,30 +24,32 @@ import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Random;
 
 
-public class GameActivity extends Activity implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
+public class GameActivity extends Activity implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener, SensorListener {
 
     int NUM_ROWS = 26;
     int NUM_COLUMNS = 16;
-    final int BOARD_HEIGHT = 800;
-    final int BOARD_WIDTH = 400;
+    int BOARD_HEIGHT = 1920;
+    int BOARD_WIDTH = 1200;
     final Handler handler = new Handler();
     final Shape[] shapes = new Shape[11];
-    final int UP_DIRECTION = 0;
-    final int RIGHT_DIRECTION = 1;
-    final int DOWN_DIRECTION = 2;
-    final int LEFT_DIRECTION = 3;
+    int RIGHT_DIRECTION = 1;
+    int DOWN_DIRECTION = 2;
+    int LEFT_DIRECTION = 3;
     int SPEED_NORMAL = 500;
     int SPEED_FAST = 50;
     String difficulty, speed;
     int score;
+    int malus;
     boolean gameInProgress, gamePaused, fastSpeedState, currentShapeAlive;
-
     final int dx[] = {-1, 0, 1, 0};
     final int dy[] = {0, 1, 0, -1};
 
@@ -53,16 +61,33 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     Bitmap bitmap;
     Canvas canvas;
     Paint paint;
-    LinearLayout linearLayout;
+
+    SensorManager sensorManager;
+
+    LinearLayout game_board;
 
     Shape currentShape;
+    private long lastUpdate;
+    private static final int SHAKE_THRESHOLD = 800;
+    private float x;
+    private float y;
+    private float z;
+
+    private float last_x;
+    private float last_y;
+    private float last_z;
+
+    private GestionMalus gestionMalus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-        //PreferenceManager.setDefaultValues(this, R.xml.preferences, true); // !?!?
+        game_board = (LinearLayout) findViewById(R.id.game_board);
+        gestionMalus =new GestionMalus();
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
 
         difficulty = prefs.getString("difficulty_preference", "Normal");
         NUM_ROWS = Integer.parseInt(prefs.getString("num_rows_preference", "20")) + 6;
@@ -86,15 +111,16 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
             }
         }
 
-        TextView textView = (TextView) findViewById(R.id.game_over_textview);
-        textView.setVisibility(View.INVISIBLE);
+        TextView game_over_textview = (TextView) findViewById(R.id.game_over_textview);
+        game_over_textview.setVisibility(View.INVISIBLE);
         TextView textView2 = (TextView) findViewById(R.id.game_over_textview2);
         textView2.setVisibility(View.INVISIBLE);
 
         bitmap = Bitmap.createBitmap(BOARD_WIDTH, BOARD_HEIGHT, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(bitmap);
         paint = new Paint();
-        linearLayout = (LinearLayout) findViewById(R.id.game_board);
+
+
         score = 0;
         currentShapeAlive = false;
 
@@ -104,7 +130,13 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         ShapesInit();
 
         GameInit();
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensorManager.registerListener(this,
+                SensorManager.SENSOR_ACCELEROMETER,
+                SensorManager.SENSOR_DELAY_GAME);
     }
+
 
     @Override
     protected void onStop() {
@@ -430,25 +462,34 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         }
         // Update the score
         score += k * (k + 1) / 2;
+        if (0 < k-1){
+            int malusAjouter = k - 1;
+            malus += malusAjouter;
+            gestionMalus.malusRandom(GameActivity.this);
+        }
         FixGameMatrix();
         return found;
     }
 
+
     void PaintMatrix() {
 
         // Paint the game board background
-        paint.setColor(Color.BLACK);
+        paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setColor(Color.TRANSPARENT);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OUT));
+        paint.setAntiAlias(true);
         canvas.drawRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT, paint);
 
         // Paint the grid on the game board
-        paint.setColor(Color.WHITE);
+        paint.setColor(Color.GRAY);
         for (int i = 0; i <= (NUM_ROWS - 6); ++i) {
-            canvas.drawLine(0, i * (BOARD_HEIGHT / (NUM_ROWS - 6)), BOARD_WIDTH,
-                    i * (BOARD_HEIGHT / (NUM_ROWS - 6)), paint);
+            canvas.drawLine(0, i * (BOARD_HEIGHT / (NUM_ROWS - 6f)), BOARD_WIDTH,
+                    i * (BOARD_HEIGHT / (NUM_ROWS - 6f)), paint);
         }
         for (int i = 0; i <= (NUM_COLUMNS - 6); ++i) {
-            canvas.drawLine(i * (BOARD_WIDTH / (NUM_COLUMNS - 6)), 0,
-                    i * (BOARD_WIDTH / (NUM_COLUMNS - 6)), BOARD_HEIGHT, paint);
+            canvas.drawLine(i * (BOARD_WIDTH / (NUM_COLUMNS - 6f)), 0,
+                    i * (BOARD_WIDTH / (NUM_COLUMNS - 6f)), BOARD_HEIGHT, paint);
         }
 
         // Paint the tetris blocks
@@ -456,10 +497,10 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
             for (int j = 3; j < NUM_COLUMNS - 3; ++j) {
                 if (gameMatrix[i][j].getState() == 1) {
                     paint.setColor(gameMatrix[i][j].getColor());
-                    canvas.drawRect((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
-                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
+                    canvas.drawRect((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
+                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
                             paint);
                 }
             }
@@ -470,25 +511,25 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
             for (int j = 3; j < NUM_COLUMNS - 3; ++j) {
                 if (gameMatrix[i][j].getState() == 1) {
                     paint.setColor(Color.BLACK);
-                    canvas.drawLine((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
-                            (j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
+                    canvas.drawLine((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
+                            (j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
                             paint);
-                    canvas.drawLine((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
-                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
+                    canvas.drawLine((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
+                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
                             paint);
-                    canvas.drawLine((j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
-                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
+                    canvas.drawLine((j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
+                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
                             paint);
-                    canvas.drawLine((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
-                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6)),
-                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6)),
+                    canvas.drawLine((j - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
+                            (j + 1 - 3) * (BOARD_WIDTH / (NUM_COLUMNS - 6f)),
+                            (i + 1 - 3) * (BOARD_HEIGHT / (NUM_ROWS - 6f)),
                             paint);
                 }
             }
@@ -507,11 +548,13 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         }
 
         // Display the current painting
-        linearLayout.setBackgroundDrawable(new BitmapDrawable(bitmap));
+        game_board.setBackgroundDrawable(new BitmapDrawable(bitmap));
 
         // Update the score textview
-        TextView textView = (TextView) findViewById(R.id.game_score_textview);
-        textView.setText("Score: " + score);
+        TextView game_score_textview = (TextView) findViewById(R.id.game_score_textview);
+        game_score_textview.setText("Points: " + score);
+        TextView game_malus_count = (TextView) findViewById(R.id.game_malus_count);
+        game_malus_count.setText("Malus: " + malus);
     }
 
     private void InsertScore() {
@@ -766,6 +809,37 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         return (angle >= init) && (angle < end);
     }
 
+
+    @Override
+    public void onSensorChanged(int sensor, float[] values) {
+        if (sensor == SensorManager.SENSOR_ACCELEROMETER) {
+            long curTime = System.currentTimeMillis();
+            // only allow one update every 100ms.
+            if ((curTime - lastUpdate) > 300) {
+                long diffTime = (curTime - lastUpdate);
+                lastUpdate = curTime;
+
+                x = values[SensorManager.DATA_X];
+                y = values[SensorManager.DATA_Y];
+                z = values[SensorManager.DATA_Z];
+
+                float speed = Math.abs(x + y + z - last_x - last_y - last_z) / diffTime * 10000;
+
+                if (speed > SHAKE_THRESHOLD) {
+                    Toast.makeText(this, "shake detected w/ speed: " + speed, Toast.LENGTH_SHORT).show();
+                }
+                last_x = x;
+                last_y = y;
+                last_z = z;
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(int sensor, int accuracy) {
+
+    }
+
     public class BoardCell {
         public final static int BEHAVIOR_IS_FIXED = 2, BEHAVIOR_IS_FALLING = 1, BEHAVIOR_NOTHING = 0;
         private int state, color, behavior;
@@ -921,5 +995,45 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
             }
         }
     }
+
+
+    public void changeToSpeedState() {
+        SPEED_NORMAL = 100;
+        SPEED_FAST = 5;
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        changeToNormalState();
+                    }
+                },
+                10000
+        );
+    }
+
+    private void changeToNormalState() {
+        SPEED_NORMAL = 500;
+        SPEED_FAST = 50;
+    }
+
+    public void inverse_direction() {
+        RIGHT_DIRECTION = 3;
+        LEFT_DIRECTION = 1;
+
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        RIGHT_DIRECTION = 1;
+                        DOWN_DIRECTION = 2;
+                        LEFT_DIRECTION = 3;
+                    }
+                },
+                10000
+        );
+    }
+
+
+
 }
 
