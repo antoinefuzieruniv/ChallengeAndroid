@@ -8,6 +8,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,7 +34,6 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     final int BOARD_WIDTH = 400;
     final Handler handler = new Handler();
     final Shape[] shapes = new Shape[11];
-    final int UP_DIRECTION = 0;
     final int RIGHT_DIRECTION = 1;
     final int DOWN_DIRECTION = 2;
     final int LEFT_DIRECTION = 3;
@@ -86,8 +87,8 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
             }
         }
 
-        TextView textView = (TextView) findViewById(R.id.game_over_textview);
-        textView.setVisibility(View.INVISIBLE);
+        TextView game_over_textview = (TextView) findViewById(R.id.game_over_textview);
+        game_over_textview.setVisibility(View.INVISIBLE);
         TextView textView2 = (TextView) findViewById(R.id.game_over_textview2);
         textView2.setVisibility(View.INVISIBLE);
 
@@ -437,11 +438,14 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     void PaintMatrix() {
 
         // Paint the game board background
-        paint.setColor(Color.BLACK);
+        paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setColor(Color.TRANSPARENT);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OUT));
+        paint.setAntiAlias(true);
         canvas.drawRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT, paint);
 
         // Paint the grid on the game board
-        paint.setColor(Color.WHITE);
+        paint.setColor(Color.GRAY);
         for (int i = 0; i <= (NUM_ROWS - 6); ++i) {
             canvas.drawLine(0, i * (BOARD_HEIGHT / (NUM_ROWS - 6)), BOARD_WIDTH,
                     i * (BOARD_HEIGHT / (NUM_ROWS - 6)), paint);
@@ -510,8 +514,11 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         linearLayout.setBackgroundDrawable(new BitmapDrawable(bitmap));
 
         // Update the score textview
-        TextView textView = (TextView) findViewById(R.id.game_score_textview);
-        textView.setText("Score: " + score);
+        TextView game_score_textview = (TextView) findViewById(R.id.game_score_textview);
+        game_score_textview.setText("Points: " + score);
+        TextView game_malus_count = (TextView) findViewById(R.id.game_malus_count);
+        game_malus_count.setText("Malus: " + score);
+
     }
 
     private void InsertScore() {
