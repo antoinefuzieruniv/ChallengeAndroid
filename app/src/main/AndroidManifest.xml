@@ -1,29 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="helloandroid.m2dl.challengeandroid">
-
-    <!--Declaring the required permissions-->
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission
-        android:name="android.permission.CAMERA" />
+    package="com.indysoft.amazingtetris">
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:configChanges="orientation">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".AboutActivity"
+            android:label="@string/app_name"
+            android:parentActivityName=".MainActivity"
+            android:configChanges="orientation">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.indysoft.amazingtetris.MainActivity" />
+        </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="Amazing Tetris"
+            android:parentActivityName=".MainActivity"
+            android:configChanges="orientation">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.indysoft.amazingtetris.MainActivity" />
+        </activity>
+
+        <activity
+            android:name=".SettingsHighscoresActivity"
+            android:label="Amazing Tetris"
+            android:parentActivityName=".HighScoresActivity"
+            android:configChanges="orientation">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.indysoft.amazingtetris.MainActivity" />
+        </activity>
+        <activity
+            android:name=".HighScoresActivity"
+            android:label="@string/app_name"
+            android:parentActivityName=".MainActivity"
+            android:configChanges="orientation">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.indysoft.amazingtetris.MainActivity" />
+        </activity>
+        <activity
+            android:name=".GameActivity"
+            android:label="@string/app_name"
+            android:parentActivityName=".MainActivity"
+            android:configChanges="orientation"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.indysoft.amazingtetris.MainActivity" />
+        </activity>
+
+        <provider
+            android:name=".HighScoresContentProvider"
+            android:exported="true"
+            android:readPermission="true"
+            android:writePermission="true"
+            android:authorities="com.indysoft.amazingtetris.contentprovider" />
     </application>
 
 </manifest>
