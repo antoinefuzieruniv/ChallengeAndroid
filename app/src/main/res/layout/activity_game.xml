@@ -51,7 +51,7 @@
         android:textIsSelectable="false"
         android:textSize="30sp" />
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/game_information"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -64,8 +64,6 @@
             android:id="@+id/game_score_textview"
             android:layout_width="wrap_content"
             android:layout_height="31dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
             android:layout_marginEnd="16dp"
             android:clickable="false"
             android:longClickable="false"
@@ -82,8 +80,6 @@
             android:id="@+id/game_malus_count"
             android:layout_width="wrap_content"
             android:layout_height="30dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
             android:layout_marginStart="16dp"
             android:clickable="false"
             android:longClickable="false"
@@ -95,5 +91,5 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.177" />
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </RelativeLayout>
