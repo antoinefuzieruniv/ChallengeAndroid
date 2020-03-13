@@ -4,6 +4,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Paramètres</string>
     <string name="new_game_button_text">Nouveau jeu</string>
+    <string name="new_game_solo_button_text">Nouveau jeu solo</string>
     <string name="high_scores_button_text">High scores</string>
     <string name="about_button_text">A propos</string>
     <string name="high_scores_string">High Scores</string>
