@@ -9,6 +9,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,11 +25,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.Random;
 
 
-public class GameActivity extends Activity implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
+public class GameActivity extends Activity implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener, SensorListener {
 
     int NUM_ROWS = 26;
     int NUM_COLUMNS = 16;
@@ -54,8 +60,18 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
     Canvas canvas;
     Paint paint;
     LinearLayout linearLayout;
-
+    SensorManager sensorManager;
     Shape currentShape;
+    private long lastUpdate;
+    private static final int SHAKE_THRESHOLD = 800;
+    private float x;
+    private float y;
+    private float z;
+
+    private float last_x;
+    private float last_y;
+    private float last_z;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +120,11 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
         ShapesInit();
 
         GameInit();
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensorManager.registerListener(this,
+                SensorManager.SENSOR_ACCELEROMETER,
+                SensorManager.SENSOR_DELAY_GAME);
     }
 
     @Override
@@ -764,6 +785,37 @@ public class GameActivity extends Activity implements GestureDetector.OnGestureL
 
     private boolean inRange(double angle, float init, float end) {
         return (angle >= init) && (angle < end);
+    }
+
+
+    @Override
+    public void onSensorChanged(int sensor, float[] values) {
+        if (sensor == SensorManager.SENSOR_ACCELEROMETER) {
+            long curTime = System.currentTimeMillis();
+            // only allow one update every 100ms.
+            if ((curTime - lastUpdate) > 300) {
+                long diffTime = (curTime - lastUpdate);
+                lastUpdate = curTime;
+
+                x = values[SensorManager.DATA_X];
+                y = values[SensorManager.DATA_Y];
+                z = values[SensorManager.DATA_Z];
+
+                float speed = Math.abs(x+y+z - last_x - last_y - last_z) / diffTime * 10000;
+
+                if (speed > SHAKE_THRESHOLD) {
+                    Toast.makeText(this, "shake detected w/ speed: " + speed, Toast.LENGTH_SHORT).show();
+                }
+                last_x = x;
+                last_y = y;
+                last_z = z;
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(int sensor, int accuracy) {
+
     }
 
     public class BoardCell {

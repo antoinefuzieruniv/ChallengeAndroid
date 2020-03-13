@@ -27,7 +27,7 @@
         android:id="@+id/welcomeTextView"
         android:textSize="30dp"
         android:layout_below="@+id/logoImageView"
-        android:layout_alignLeft="@+id/new_game_button"
+        
         android:layout_alignStart="@+id/new_game_button" />
 
     <EditText
